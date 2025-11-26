@@ -75,10 +75,31 @@ A fully automated, self-healing platform featuring:
     ```
 
 ### 📸 Screenshots
-(See /screenshots folder for high-res proofs)
-*   **Hybrid Nodes:** Terminal showing mixed Spot/On-Demand capacity.
-*   **ArgoCD Tree:** Visualizing the distributed system state.
-*   **Jaeger Trace:** A waterfall graph of a request latency.
+### 📸 Screenshots
+
+#### 1. Hybrid Compute (Spot + On-Demand)
+![Hybrid Nodes](screenshots/1-hybrid-nodes.PNG)
+*Terminal proof showing `spot` nodes (for stateless apps) running alongside `on-demand` nodes (for databases).*
+
+#### 2. GitOps Visualization (ArgoCD)
+![ArgoCD Tree](screenshots/argocd-tree.PNG)
+*Full application tree showing the relationship between the Helm Chart, Services, and Pods.*
+
+#### 3. Observability & Tracing
+![Jaeger Trace](screenshots/2-jaeger-trace.PNG)
+*End-to-end distributed trace capturing the latency of a single user request across microservices.*
+
+#### 4. Cost & Capacity Dashboard
+![Grafana Dashboard](screenshots/4-grafana-dashboard.PNG)
+*Real-time visualization of Spot instance savings and cluster utilization.*
+
+#### 5. Self-Healing in Action
+![Self Healing Log](screenshots/3-self-healing-log.PNG)
+*Logs showing Karpenter detecting a Spot Interruption and proactively moving workloads.*
+
+#### 6. Policy Enforcement
+![Policy Enforcement](screenshots/6-policy-enforcement.PNG)
+*Kyverno blocking an expensive deployment that exceeds cost governance limits.*
 
 ### 🤝 Contributing
 See CONTRIBUTING.md for pull request guidelines.
