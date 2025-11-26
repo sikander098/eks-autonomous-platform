@@ -1,0 +1,51 @@
+apiVersion: karpenter.sh/v1
+kind: NodePool
+metadata:
+  name: default
+spec:
+  template:
+    spec:
+      expireAfter: 720h # Recycle nodes every 30 days to keep OS fresh
+      requirements:
+        - key: kubernetes.io/arch
+          operator: In
+          values: ["amd64"]
+        - key: kubernetes.io/os
+          operator: In
+          values: ["linux"]
+        # THE MAGIC SETTING: Forces AWS to buy Spot instances
+        - key: karpenter.sh/capacity-type
+          operator: In
+          values: ["spot"]
+        # Cost Control: Only buy cost-effective families
+        - key: karpenter.k8s.aws/instance-category
+          operator: In
+          values: ["c", "m", "r", "t"]
+        - key: karpenter.k8s.aws/instance-generation
+          operator: Gt
+          values: ["2"]
+      nodeClassRef:
+        group: karpenter.k8s.aws
+        kind: EC2NodeClass
+        name: default
+  limits:
+    cpu: 1000 # Safety cap to prevent infinite billing
+  disruption:
+    consolidationPolicy: WhenEmptyOrUnderutilized # Aggressively delete empty nodes
+    consolidateAfter: 0s
+---
+apiVersion: karpenter.k8s.aws/v1
+kind: EC2NodeClass
+metadata:
+  name: default
+spec:
+  amiFamily: AL2
+  role: "KarpenterNodeRole-auto-heal" # Variable: Match your IAM Role name
+  subnetSelectorTerms:
+    - tags:
+        karpenter.sh/discovery: "auto-heal" # Variable: Match your Cluster Name
+  securityGroupSelectorTerms:
+    - tags:
+        karpenter.sh/discovery: "auto-heal"
+  amiSelectorTerms:
+    - alias: al2@latest

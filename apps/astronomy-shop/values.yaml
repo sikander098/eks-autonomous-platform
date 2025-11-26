@@ -1,0 +1,3 @@
+# No overrides. Using Chart defaults.
+# Workload will inherit the Cluster's Default NodePool (Spot).
+# Database placement is handled via Patch Script or Kustomize in Level 4.

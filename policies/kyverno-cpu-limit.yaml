@@ -1,0 +1,22 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: limit-cpu-requests
+spec:
+  validationFailureAction: Enforce # BLOCK the request
+  background: false
+  rules:
+  - name: block-high-cpu
+    match:
+      any:
+      - resources:
+          kinds:
+          - Pod
+    validate:
+      message: "Processing denied: You asked for too much CPU! Limit is 2."
+      pattern:
+        spec:
+          containers:
+          - resources:
+              requests:
+                cpu: "<=2" # The logic: Request must be less than or equal to 2
