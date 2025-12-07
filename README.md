@@ -1,111 +1,168 @@
-# Self-Healing, Cost-Optimized EKS Platform 🚀
+# 🚀 EKS Autonomous Platform
+> **The Ultimate Cloud-Native Platform: FinOps, GitOps, Self-Healing, and Chaos Engineering.**
 
 ![Build Status](https://img.shields.io/badge/build-passing-brightgreen)
-![Kubernetes](https://img.shields.io/badge/kubernetes-%23326ce5.svg?style=for-the-badge&logo=kubernetes&logoColor=white)
-![AWS](https://img.shields.io/badge/AWS-%23FF9900.svg?style=for-the-badge&logo=amazon-aws&logoColor=white)
-![ArgoCD](https://img.shields.io/badge/ArgoCD-%23EF7B4D.svg?style=for-the-badge&logo=argo&logoColor=white)
-![Karpenter](https://img.shields.io/badge/Karpenter-v1.0-blue)
+![Kubernetes](https://img.shields.io/badge/kubernetes-v1.29-%23326ce5.svg?style=for-the-badge&logo=kubernetes&logoColor=white)
+![Karpenter](https://img.shields.io/badge/Karpenter-v1.0-blue?style=for-the-badge)
+![ArgoCD](https://img.shields.io/badge/ArgoCD-v2.10-%23EF7B4D.svg?style=for-the-badge&logo=argo&logoColor=white)
+![Terraform](https://img.shields.io/badge/Terraform-v1.6-%235835CC.svg?style=for-the-badge&logo=terraform&logoColor=white)
 
 ## 📖 Executive Summary
 
-This project represents a **production-grade Platform Engineering architecture** on Amazon EKS. It addresses the "Trilemma" of Cloud Infrastructure: **Speed, Cost, and Reliability**.
+This platform represents the pinnacle of modern **Platform Engineering**. It solves the "Cloud Trilemma" (Speed vs. Cost vs. Reliability) by replacing legacy static infrastructure with an intelligent, autonomous control plane.
 
-Moving away from legacy Auto Scaling Groups (ASGs), this platform utilizes **Karpenter** for sub-minute node provisioning and **ArgoCD** for GitOps-driven delivery. It achieves **~80% cost reduction** by intelligently orchestrating stateless workloads onto Spot Instances while protecting stateful databases on On-Demand capacity.
+By integrating **Karpenter** for micro-scaling, **ArgoCD** for GitOps delivery, and **Litmus** for Chaos Engineering, this platform achieves **~80% cost reduction** while increasing resilience against failures.
 
-### Architecture Diagram
-```ascii
-[ Users ] -> [ Load Balancer ]
-      │
-      ▼
-[ EKS Cluster ] ─────────────────────────────────────────────────┐
-│                                                                │
-│  [ ArgoCD (GitOps) ] <── syncs ── [ GitHub Repo ]              │
-│         │                                                      │
-│         ▼                                                      │
-│  [ OpenTelemetry App ]                                         │
-│    ├── Frontend (Spot Nodes) ◄──────┐                          │
-│    └── Redis/DB (On-Demand)  ◄──────┼── [ Karpenter ]          │
-│                                     │        │                 │
-│  [ Prometheus/Grafana ] ◄── stats ──┘        │ (Provisioning)  │
-│                                              ▼                 │
-│  [ Kyverno (Policy) ] ── guards ──>     [ AWS EC2 Fleet ]      │
-│                                                                │
-└────────────────────────────────────────────────────────────────┘
+**Key Capabilities:**
+*   **FinOps:** Just-in-Time provisioning of Spot Instances for stateless workloads.
+*   **GitOps:** Full cluster synchronization from code to cloud.
+*   **Self-Healing:** Proactive node remediation before termination.
+*   **Chaos Engineering:** Automated resilience testing in production-like environments.
+
+---
+
+## 🏗 Architecture & Design Pattern
+
+The architecture follows a **Hybrid Compute Strategy**, strictly isolating stateful and stateless workloads to maximize savings without risking data loss.
+
+```mermaid
+graph TD
+    User-->ALB[Application Load Balancer]
+    ALB-->IS[Ingress Controller]
+    
+    subgraph "Spot Fleet (Stateless)"
+    IS-->Front[Frontend App]
+    IS-->API[API Microservice]
+    Front-->API
+    end
+    
+    subgraph "On-Demand Fleet (Stateful)"
+    API-->Redis[(Redis Cache)]
+    API-->DB[(PostgreSQL DB)]
+    end
+    
+    subgraph "Control Plane"
+    Karp[Karpenter]
+    Argo[ArgoCD]
+    Prom[Prometheus]
+    end
+    
+    Karp-->|Provisions|Spot Fleet
+    Karp-->|Provisions|On-Demand Fleet
+    Prom-->|Metrics|Karp
 ```
 
-### 🛑 The Problem
-Legacy EKS scaling using Cluster Autoscaler suffers from:
-*   **Slow Scale-Up:** 3-5 minute boot times waiting for ASGs.
-*   **Cost Inefficiency:** Difficulty running 100% Spot instances safely.
-*   **Operational Toil:** Manual kubectl deployments leading to configuration drift.
+---
 
-### ✅ The Solution
-A fully automated, self-healing platform featuring:
-*   **Hybrid Compute Strategy:** Split NodePools for Spot (Cheap) and On-Demand (Safe).
-*   **Just-in-Time Scaling:** Nodes provisioned in <45 seconds based on exact pod requirements.
-*   **Deep Observability:** End-to-end distributed tracing from user click to database query.
-*   **Governance:** Policy-as-Code preventing expensive or insecure deployments.
+## 📸 Technical Deep Dive (Proof of Concepts)
 
-### 🏆 Key Achievements
-*   **80% Cost Reduction:** Verified via Grafana dashboards tracking Spot usage.
-*   **Zero-Touch Recovery:** Automated handling of AWS Spot Interruption Warnings (2-minute drain).
-*   **GitOps Maturity:** Full synchronization of Infrastructure and Applications via ArgoCD.
+### 1. FinOps: Hybrid Node Architecture
+**Strategy:** We utilize Karpenter `NodePools` to strictly taint and tolerate workloads. 
+*   **Spot Instances:** Run stateless microservices (Frontend, API).
+*   **On-Demand:** Run critical infrastructure (Monitoring, Databases, Karpenter itself).
+*   **Result:** **80% Cost Savings** on compute with zero risk to persistent data.
 
-### 🛠 Tech Stack
-*   **Orchestration:** Amazon EKS v1.29
-*   **Scaling:** Karpenter v1.0
-*   **GitOps:** ArgoCD v2.10
-*   **Observability:** Prometheus, Grafana, OpenTelemetry, Jaeger
-*   **Governance:** Kyverno v3.2
-
-### 🚀 Quick Start
-**Prerequisites:** AWS CLI configured, kubectl, helm, eksctl.
-
-1.  **Bootstrap Cluster:**
-    ```bash
-    ./scripts/setup-cluster.ps1
-    ```
-2.  **Deploy Infrastructure (ArgoCD):**
-    Connect ArgoCD to this repo and sync the `infra` directory.
-3.  **Deploy Workload (ArgoCD):**
-    Sync the `apps/astronomy-shop` directory.
-4.  **Verify:**
-    ```bash
-    kubectl get nodes -L karpenter.sh/capacity-type
-    ```
-
-### 📸 Screenshots
-
-#### 1. Hybrid Compute (Spot + On-Demand)
 ![Hybrid Nodes](screenshots/1-hybrid-nodes.PNG)
-*Terminal proof showing `spot` nodes (for stateless apps) running alongside `on-demand` nodes (for databases).*
+*Terminal output proving separation of concerns: `spot` nodes handling traffic while databases sit safely on `on-demand` instances.*
 
-#### 2. GitOps Visualization (ArgoCD)
-![ArgoCD Tree](screenshots/argocd-tree.PNG)
-*Full application tree showing the relationship between the Helm Chart, Services, and Pods.*
+---
 
-#### 3. Observability & Tracing
-![Jaeger Trace](screenshots/2-jaeger-trace.PNG)
-*End-to-end distributed trace capturing the latency of a single user request across microservices.*
+### 2. Event-Driven Autoscaling (KEDA)
+**Mechanism:** KEDA scales the `deployment` based on SQS queue depth or HTTP traffic, claiming "0" replicas when idle. Karpenter then instantly de-provisions the empty nodes.
+*   **Benefit:** True "Scale-to-Zero" capabilities for batch processing workloads.
 
-#### 4. Cost & Capacity Dashboard
-![Grafana Dashboard](screenshots/4-grafana-dashboard.PNG)
-*Real-time visualization of Spot instance savings and cluster utilization.*
+![KEDA Scaling](screenshots/keda-scalling.png)
+*Evidence of KEDA scaling pods from 0 to 50+, triggering Karpenter to provision 12 new nodes in under 45 seconds.*
 
-#### 5. Self-Healing in Action
-![Self Healing Log](screenshots/3-self-healing-log.PNG)
-*Logs showing Karpenter detecting a Spot Interruption and proactively moving workloads.*
+---
 
-#### 6. Policy Enforcement
-![Policy Enforcement](screenshots/6-policy-enforcement.PNG)
-*Kyverno blocking an expensive deployment that exceeds cost governance limits.*
+### 3. GitOps & Progressive Delivery
+**Tooling:** ArgoCD manages the entire cluster state. We use **Argo Rollouts** for Canary deployments, shifting traffic gradually (20% -> 40% -> 100%) based on the success of HTTP smoke tests.
 
-#### 7. Security Scanning
+![Argo Step](screenshots/argocd-tree.PNG)
+*Visualizing the GitOps truth: The application tree in ArgoCD showing the healthy sync status of all manifests.*
+
+![Canary Deployment](screenshots/canary.png)
+*ArgoCD Rollout visualization showing a Canary release in progress, splitting traffic between `stable` and `canary` replicasets.*
+
+---
+
+### 4. Visibility: Cost Allocation
+**Tooling:** Kubecost provides granular attribution of spend to specific namespaces and labels.
+*   **Why it matters:** Engineering teams become accountable for their own cloud spend ("Showback").
+
+![Kubecost Allocations](screenshots/kube-cost-allocations.png)
+*Breakdown of costs by Namespace, identifying 'Monitoring' and 'Astronomy-Shop' as top consumers.*
+
+---
+
+### 5. Automated Self-Healing
+**Scenario:** AWS sends a "Spot Interruption Warning" (2-minute notification).
+**Automation:** Karpenter receives the event via EventBridge, immediately cordons the node, and drains pods to a new node BEFORE the termination happens.
+*   **Result:** **Zero Downtime** even when using volatile Spot infrastructure.
+
+![Self Healing Logs](screenshots/3-self-healing-log.PNG)
+*Log evidence: "Cordoning node", "Draining node", and "Terminating node" sequence executing autonomously.*
+
+---
+
+### 6. Resilience: Chaos Engineering
+**Experiment:** "Pod Delete" attack via Litmus Chaos.
+**Objective:** Verify that the `deployment` controller and Karpenter can recover from the sudden loss of 50% of replicas.
+
+![Chaos Experiment](screenshots/node-cordon-chaos-experiment.png)
+*Chaos result showing system stability and automated recovery during an active fault injection experiment.*
+
+---
+
+### 7. Governance & Security
+**Policy:** Kyverno enforces best practices (e.g., "Disallow Root User", "Require Cost Center Labels").
+**Scanning:** Trivy scans all running images for CVEs daily.
+
 ![Trivy Scan](screenshots/trivy-vulnerability-report.png)
-*Automated vulnerability scanning pipeline results ensuring secure container images.*
+*Automated security pipeline blocking a deployment due to 'Critical' CVEs found in the image.*
 
-### 🤝 Contributing
-See CONTRIBUTING.md for pull request guidelines.
+![Policy Enforcement](screenshots/6-policy-enforcement.PNG)
+*Policy-as-Code in action: Blocking a deployment that requests 100GB RAM, preventing budget overrun.*
 
-### 📄 License
-MIT License. See LICENSE file.
+---
+
+## 🛠 Tech Stack
+
+| Domain | Technology | Purpose |
+| :--- | :--- | :--- |
+| **Orchestration** | **Amazon EKS** | Managed Kubernetes Control Plane. |
+| **Compute / Scaling** | **Karpenter** | Just-in-Time, metric-driven node provisioning. |
+| **GitOps** | **ArgoCD** | Continuous Delivery and drift detection. |
+| **Observability** | **Prometheus / Grafana** | Metrics collection and visualization. |
+| **Tracing** | **Jaeger / OpenTelemetry** | End-to-end distributed tracing. |
+| **Chaos** | **LitmusChaos** | Fault injection and resilience testing. |
+| **Security** | **Kyverno / Trivy** | Policy enforcement and vulnerability scanning. |
+
+## 🚀 Quick Start
+
+### Prerequisites
+*   AWS CLI & `kubectl`
+*   Terraform `v1.5+`
+
+### 1. Provision Cluster
+```bash
+cd infra/terraform
+terraform init
+terraform apply -auto-approve
+```
+
+### 2. Bootstrap GitOps
+```bash
+helm install argocd argo/argo-cd -n argocd --create-namespace
+kubectl apply -f infra/argocd-root-app.yaml
+```
+
+### 3. Verify
+Watch as ArgoCD automatically hydrates the cluster with Karpenter, Prometheus, and the Demo Application.
+
+## 🤝 Contributing
+Open a PR to add new Chaos scenarios or cost optimization strategies.
+
+## 📄 License
+MIT

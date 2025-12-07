@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: traffic-cannon
+  namespace: astronomy
+spec:
+  replicas: 10  # 10 attackers
+  selector:
+    matchLabels:
+      app: traffic-cannon
+  template:
+    metadata:
+      labels:
+        app: traffic-cannon
+    spec:
+      containers:
+      - name: siege
+        image: curlimages/curl
+        command: ["/bin/sh"]
+        args: ["-c", "while true; do curl -s -o /dev/null http://frontend:8080/; sleep 0.01; done"]
