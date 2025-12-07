@@ -87,6 +87,18 @@ graph TD
 
 ---
 
+### 4. Deep Observability (Tracing & Metrics)
+**stack:** OpenTelemetry, Jaeger, Prometheus, Grafana.
+**Goal:** To understand *why* something is slow, not just *if* it is slow.
+
+![Jaeger Trace](screenshots/2-jaeger-trace.PNG)
+*End-to-End Distributed Tracing: Visualizing the full lifecycle of a user request from Load Balancer -> Frontend -> API -> Database.*
+
+![Grafana Dashboard](screenshots/4-grafana-dashboard.PNG)
+*Real-Time Metrics: Custom Grafana dashboard tracking Spot Instance savings (68% vs On-Demand) and Node Provisioning times.*
+
+---
+
 ### 4. Visibility: Cost Allocation
 **Tooling:** Kubecost provides granular attribution of spend to specific namespaces and labels.
 *   **Why it matters:** Engineering teams become accountable for their own cloud spend ("Showback").
