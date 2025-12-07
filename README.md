@@ -75,7 +75,6 @@ A fully automated, self-healing platform featuring:
     ```
 
 ### 📸 Screenshots
-### 📸 Screenshots
 
 #### 1. Hybrid Compute (Spot + On-Demand)
 ![Hybrid Nodes](screenshots/1-hybrid-nodes.PNG)
@@ -100,6 +99,10 @@ A fully automated, self-healing platform featuring:
 #### 6. Policy Enforcement
 ![Policy Enforcement](screenshots/6-policy-enforcement.PNG)
 *Kyverno blocking an expensive deployment that exceeds cost governance limits.*
+
+#### 7. Security Scanning
+![Trivy Scan](screenshots/trivy-vulnerability-report.png)
+*Automated vulnerability scanning pipeline results ensuring secure container images.*
 
 ### 🤝 Contributing
 See CONTRIBUTING.md for pull request guidelines.
