@@ -30,25 +30,25 @@ graph TD
     User-->ALB[Application Load Balancer]
     ALB-->IS[Ingress Controller]
     
-    subgraph "Spot Fleet (Stateless)"
+    subgraph SF ["Spot Fleet (Stateless)"]
     IS-->Front[Frontend App]
     IS-->API[API Microservice]
     Front-->API
     end
     
-    subgraph "On-Demand Fleet (Stateful)"
+    subgraph ODF ["On-Demand Fleet (Stateful)"]
     API-->Redis[(Redis Cache)]
     API-->DB[(PostgreSQL DB)]
     end
     
-    subgraph "Control Plane"
+    subgraph CP ["Control Plane"]
     Karp[Karpenter]
     Argo[ArgoCD]
     Prom[Prometheus]
     end
     
-    Karp-->|Provisions|Spot Fleet
-    Karp-->|Provisions|On-Demand Fleet
+    Karp-->|Provisions|SF
+    Karp-->|Provisions|ODF
     Prom-->|Metrics|Karp
 ```
 
