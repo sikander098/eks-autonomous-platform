@@ -99,7 +99,7 @@ graph TD
 
 ---
 
-### 4. Visibility: Cost Allocation
+### 5. Visibility: Cost Allocation
 **Tooling:** Kubecost provides granular attribution of spend to specific namespaces and labels.
 *   **Why it matters:** Engineering teams become accountable for their own cloud spend ("Showback").
 
@@ -108,7 +108,7 @@ graph TD
 
 ---
 
-### 5. Automated Self-Healing
+### 6. Automated Self-Healing
 **Scenario:** AWS sends a "Spot Interruption Warning" (2-minute notification).
 **Automation:** Karpenter receives the event via EventBridge, immediately cordons the node, and drains pods to a new node BEFORE the termination happens.
 *   **Result:** **Zero Downtime** even when using volatile Spot infrastructure.
@@ -118,7 +118,7 @@ graph TD
 
 ---
 
-### 6. Resilience: Chaos Engineering
+### 7. Resilience: Chaos Engineering
 **Experiment:** "Pod Delete" attack via Litmus Chaos.
 **Objective:** Verify that the `deployment` controller and Karpenter can recover from the sudden loss of 50% of replicas.
 
@@ -127,7 +127,7 @@ graph TD
 
 ---
 
-### 7. Governance & Security
+### 8. Governance & Security
 **Policy:** Kyverno enforces best practices (e.g., "Disallow Root User", "Require Cost Center Labels").
 **Scanning:** Trivy scans all running images for CVEs daily.
 
